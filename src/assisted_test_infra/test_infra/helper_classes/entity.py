@@ -10,6 +10,7 @@ from assisted_test_infra.test_infra import BaseEntityConfig
 from assisted_test_infra.test_infra.helper_classes.nodes import Nodes
 from service_client import InventoryClient, log
 
+import ipaddress
 
 class Entity(ABC):
     def __init__(self, api_client: InventoryClient, config: BaseEntityConfig, nodes: Optional[Nodes] = None):
@@ -96,9 +97,10 @@ class Entity(ABC):
         self.prepare_networking()
 
     def _set_ipxe_url(self):
+        ipv4_ipxe = str(ipaddress.IPv4Network(self.nodes.controller.get_primary_machine_cidr())[1])
         ipxe_server_url = (
-            f"http://{consts.DEFAULT_IPXE_SERVER_IP}:{consts.DEFAULT_IPXE_SERVER_PORT}/{self._config.entity_name}"
-        )
+          f"http://{ipv4_ipxe}:{consts.DEFAULT_IPXE_SERVER_PORT}/{self._config.entity_name}"
+          )
         self.nodes.controller.set_ipxe_url(network_name=self.nodes.get_cluster_network(), ipxe_url=ipxe_server_url)
 
     @abstractmethod
